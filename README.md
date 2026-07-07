@@ -1,54 +1,139 @@
+# 🏟️ StadiumFlow AI
+### Smart Stadium Companion System for FIFA World Cup 2026
+> **Google GenAI-First Hackathon Project** — A complete Stadium Operating System powered by a centralized Gemini 2.5 Flash intelligence layer.
 
-## Vision
-StadiumFlow is an advanced, mobile-first concept application designed to revolutionize the live event experience. By combining real-time crowd data, AI-driven recommendations, and sleek, premium glassmorphism aesthetics, the system optimizes attendee flow and radically reduces wait times within massive sporting venues and arenas.
+---
 
-Our goal is simple: **Eliminate the friction of crowds.**
+## 🌟 Vision
+**StadiumFlow AI** is a premium, mobile-first web companion designed for the FIFA World Cup 2026 at MetLife Stadium. Instead of deploying multiple disconnected AI features, StadiumFlow AI aggregates live stadium metrics, user profiles, accessibility needs, and match timelines into a **Single AI Context Engine**. 
 
-## Features & Interfaces
+From this single intelligence layer, Gemini powers real-time routing, conversational assistance, organizer command centers, multilingual volunteer tasks, and instant emergency protocols.
 
-The application features a dual-sided architecture, allowing both fans and staff to interact with the same synchronized stadium brain.
+---
 
-### 1. Fan Experience (The User App)
-* **AI Fast Entry Plan**: The system actively monitors gate traffic and dynamically recommends faster entry alternatives (e.g., routing a fan from a 25-minute wait at Gate A to a 2-minute wait at Gate C).
-* **Smart Food Quick-Check**: Instead of standing in line, fans can digitally check food wait times. If a preferred stall is congested, the “Brain” automatically recommends the fastest alternative stall nearby.
-* **Live Dynamic Routing**: A visual routing engine that reroutes attendees away from congested zones in real-time, visualizing the new path directly on a stadium map.
-* **Digital Lines**: Allows fans to wait anywhere instead of physically standing in lines for concessions.
+## 🚀 Key Features by Role
 
-### 2. Staff Command Center (The Admin App)
-* **Live Zone Density**: Operational dashboard to monitor crowd percentages across various concourses and merchandise areas.
-* **Gate Management**: Staff can forcefully open or close gates as needed to direct flow. These actions instantly communicate with the recommendation engine to stop sending fans to closed gates.
-* **Activity & Emergency Logs**: Complete live activity feed tracking system changes and the ability to trigger global evacuation routes or broadcast alerts to all active fans.
+### 🙋 1. Fan Companion (User App)
+- **🏟️ Premium Home Dashboard**: At-a-glance match overview (Brazil vs Germany), live entry gate congestion alerts, and estimated entry wait times.
+- **🤖 AI Stadium Assistant**: An interactive chat interface equipped with multi-turn conversation history, a typing indicator, 7-language support (English, Spanish, French, Arabic, Hindi, Japanese, Portuguese), response copying, and quick-prompt suggestions.
+- **⚡ Smart Navigation**: Select from 5 dynamic routing types:
+  - *Fastest Route* (minimizes gate queues)
+  - *Least Crowded Route* (avoids congested concourses)
+  - *Accessible Route* (ramps, elevators, wheelchair friendly)
+  - *Family-Friendly Route* (kids zone highlights, lower stairs)
+  - *Emergency Route* (quickest path to safety)
+- **👥 Live Crowd AI**: Heatmap zone overlays, gate arrival predictions (10-minute forecasts), and parking lot capacities.
+- **🍔 Smart Concessions**: Recommends short-wait food stalls, filters by dietary preferences (Halal, Vegan, Vegetarian, Gluten-Free), and enables joining a **Digital Virtual Queue** so you can wait in your seat, not in line.
+- **🚨 One-Tap SOS Emergency Mode**: Takeover screen with immediate evacuation routes, nearest exits, and localized assembly warnings.
 
-## Technical Architecture & Workflow
+### 📊 2. Organizer Command Center
+- **🧠 AI Situation Report**: Gemini evaluates all active gates, crowd zones, and transit alerts, generating a natural language operational summary for venue directors.
+- **⚡ AI Action Recommendations**: Operational items prioritised by severity (e.g. *"Open Gate E supplementary lanes now"*).
+- **👷 AI Volunteer Redeployment**: Auto-assigns volunteer teams based on gate congestion or crowd spikes.
+- **♻️ Sustainability Dashboard**: Tracks water refills, public transport usage, recycling rates, and dynamic carbon savings, calculated into a visual **Eco Score**.
+- **📍 Live Digital Twin**: SVG visualization of the entire stadium arena overlaying live crowd densities, active emergency zones, and volunteer locations.
+- **📢 Global Broadcast System**: Direct controls for stadium announcements.
 
-* **Vanilla Module System**: Built purely with lightweight Native ES Modules (`<script type="module">`), ensuring blisteringly fast browser execution without requiring a heavy Node/Webpack compile chain.
-* **Google Maps Platform**: Live visual feedback is powered by real `@googlemaps/js-api-loader` mapping tools, injecting dynamic Heatmap layers directly onto the view.
-* **Gemini AI Engine (`services/ai.js`)**: Real-time stall recommendations and congestion routing are mathematically generated using the Google `@google/genai` library pointing to `gemini-2.5-flash`.
-* **Firebase Cloud Infrastructure (`services/db.js` & `auth.js`)**: State management and Security relies on the `firebase@10.8.0` SDK ecosystem featuring Realtime Database tracking alongside a complete role-based Authentication intercept layer.
-* **Aesthetic System**: Engineered with a unified glassmorphism design language using custom CSS tokens (`styles.css`), rendering a dark-mode, neon-accented premium UI.
+### 🦺 3. Volunteer Hub
+- **📍 AI Task Assignment**: Automatically fetches the volunteer's team assignments and priorities.
+- **⚡ Quick Operations**: Specialized buttons to get step-by-step Gemini instructions for:
+  - *Crowd Control* (Where am I needed?)
+  - *Accessibility Assist* (Nearest wheelchair helper)
+  - *Lost Child Protocol* (Lost child workflow)
+  - *Medical Dispatch* (Nearest first aid)
+- **🌐 Translation Assistant**: Real-time translation input to translate phrases for international visitors into Spanish, French, Arabic, Hindi, Japanese, or Portuguese.
 
-## Quick Start
-To view the live application locally:
-1. Clone the repository to your local machine.
-2. Duplicate `src/config.js.example` to `src/config.js` and input your personal Firebase, Google Maps, and Gemini API keys.
-3. Start a standard HTTP server in the root directory (e.g., `python3 -m http.server 8000`).
-4. Navigate to `http://localhost:8000` in your browser.
-5. Select whether to enter as a **Fan** or **Staff** to explore the fully functional interfaces.
+### 👷 4. Staff Operations
+- **🚪 Gate Management**: Click-to-toggle gates (Open/Closed). The AI engine instantly recalculates routing recommendations to avoid closed gates.
+- **📊 Live Density Feeds**: Keep track of concourse fills.
+- **🧹 Facility Service Actions**: Dispatch cleaning teams or log bin overflow.
 
+---
 
+## 🛠️ Technical Architecture
 
+StadiumFlow AI is designed as a modular, lightweight, framework-free web app using ES modules for instant loading times and mobile-first responsiveness.
+
+```
+          ┌──────────────────────────────────────────────────────────┐
+          │                      User Interface                      │
+          │         (Fan App, Organizer, Volunteer, Staff)           │
+          └────────────────────────────┬─────────────────────────────┘
+                                       │ Input/Events
+                                       ▼
+          ┌──────────────────────────────────────────────────────────┐
+          │                    src/app.js (Main)                     │
+          └────────────────────────────┬─────────────────────────────┘
+                                       │ Reads State
+                                       ▼
+          ┌──────────────────────────────────────────────────────────┐
+          │            src/services/contextEngine.js                 │
+          │  - Aggregates user role, seat, gate, queue times,       │
+          │    sustainability data, weather, emergency status.       │
+          └────────────────────────────┬─────────────────────────────┘
+                                       │ Snapshot Payload
+                                       ▼
+          ┌──────────────────────────────────────────────────────────┐
+          │                  src/services/ai.js                      │
+          │  - Unified Gemini 2.5 Flash Wrapper                      │
+          │  - Local offline fallback models if API key is missing   │
+          └──────────────────────────────────────────────────────────┘
+```
+
+### File Structure
+- `index.html`: Entry point representing the 4-role layouts and bottom navigation frames.
+- `src/app.js`: Main coordinator logic managing user navigation, UI rendering, logs, SVG route generation, and chat history.
+- `src/styles/styles.css`: Dark mode glassmorphism UI system featuring custom variables, typing indicators, animated alert cards, and layout grids.
+- `src/services/contextEngine.js`: Global state aggregator providing a single JSON context snapshot to all AI models.
+- `src/services/ai.js`: Main Gemini API integration handler containing the 9 core operational prompts.
+- `src/services/mock_data.js`: Simulates stadium updates (queue changes, gate fluctuations, parking ticks) so the dashboard feels alive.
+
+---
+
+## ⚙️ Quick Start & Execution
+
+Since the project utilizes ES modules, opening `index.html` directly (`file://`) will trigger browser security (CORS) blocks. A local web server is required.
+
+### 1. Configure API Keys
+Duplicate `src/config.js.example` to `src/config.js` and add your **Gemini API Key**:
+```javascript
+export const CONFIG = {
+  FIREBASE: {
+    apiKey: "demo-api-key",
+    authDomain: "demo-project.firebaseapp.com",
+    projectId: "demo-project"
+  },
+  GOOGLE_MAPS_API_KEY: "",
+  GEMINI_API_KEY: "YOUR_GEMINI_API_KEY_HERE"  // <-- Insert your key here
+};
+```
+*Note: If no key is provided, the application will gracefully fall back to locally calculated intelligent suggestions.*
+
+### 2. Run Locally
+Navigate to the `promptwarproject` directory and start a local server:
+
+#### Option A: Node.js (npx)
+```bash
+npx serve
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+#### Option B: Python (Built-in on macOS)
+```bash
+python3 -m http.server 8000
+```
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+---
 
 ## 👨‍💻 Author
-
-Jay Dhokne
+**Jay Dhokne**
 IT Student | Developer | Creative Technologist
 
-GitHub: https://github.com/urstrulyyjay
+- **GitHub**: [urstrulyyjay](https://github.com/urstrulyyjay)
+- **Repository**: [promptwarproject](https://github.com/urstrulyyjay/promptwarproject)
 
+---
 
-
-
-
-##⭐ Show Support
-
-If you like this project, give it a ⭐ on GitHub.
+## ⭐ Support
+If you like this project, please give it a ⭐ on GitHub!

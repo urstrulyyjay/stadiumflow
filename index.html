@@ -1,174 +1,735 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Stadium Companion</title>
-    <!-- Use Inter font for a modern look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for standard vector icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="src/styles/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080B12">
+  <title>StadiumFlow AI — FIFA World Cup 2026 Smart Stadium</title>
+  <meta name="description" content="AI-powered Smart Stadium Companion for FIFA World Cup 2026. Real-time navigation, crowd intelligence, and Gemini AI assistance for fans, organizers, and volunteers.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Styles -->
+  <link rel="stylesheet" href="src/styles/styles.css">
 </head>
 <body>
 
-    <!-- ROLE SELECTOR -->
-    <div id="role-selector">
-        <h1 class="header-title role-title mb-2 text-center">
-            StadiumFlow
-        </h1>
-        <button class="btn btn-primary w-250" id="btn-role-user" aria-label="Enter as Fan">
-            <i class="fa-solid fa-user"></i> Enter as Fan
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EMERGENCY OVERLAY (global, role-agnostic)
+═══════════════════════════════════════════════════════════════════════ -->
+<div id="emergency-overlay" class="emergency-overlay" role="alert" aria-live="assertive"></div>
+<div id="emergency-border"  class="emergency-border hidden"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ROLE SELECTOR
+═══════════════════════════════════════════════════════════════════════ -->
+<div id="role-selector" role="main" aria-label="Select your role">
+  <div class="role-selector-tag">⚽ FIFA World Cup 2026</div>
+  <div class="role-selector-logo">StadiumFlow<span style="color:var(--primary)"> AI</span></div>
+  <div class="role-selector-sub">Smart Stadium Companion · MetLife Stadium</div>
+
+  <div class="role-grid" style="margin-top:0.5rem">
+    <button class="role-card fan" id="btn-role-fan" aria-label="Enter as Fan">
+      <div class="role-emoji">🙋</div>
+      <div class="role-name">Fan</div>
+      <div class="role-desc">Navigate, food &amp; AI assistant</div>
+    </button>
+    <button class="role-card organizer" id="btn-role-organizer" aria-label="Enter as Organizer">
+      <div class="role-emoji">📊</div>
+      <div class="role-name">Organizer</div>
+      <div class="role-desc">Command center &amp; AI insights</div>
+    </button>
+    <button class="role-card volunteer" id="btn-role-volunteer" aria-label="Enter as Volunteer">
+      <div class="role-emoji">🦺</div>
+      <div class="role-name">Volunteer</div>
+      <div class="role-desc">Tasks, translation &amp; incidents</div>
+    </button>
+    <button class="role-card staff" id="btn-role-staff" aria-label="Enter as Staff">
+      <div class="role-emoji">👷</div>
+      <div class="role-name">Staff</div>
+      <div class="role-desc">Gate control &amp; operations</div>
+    </button>
+  </div>
+
+  <div style="font-size:0.7rem;color:var(--text-muted);text-align:center;margin-top:0.5rem">
+    Powered by <strong style="color:var(--primary)">Gemini AI</strong> · Google Cloud · Firebase
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FAN APP
+═══════════════════════════════════════════════════════════════════════ -->
+<div class="app-container hidden" id="fan-app">
+  <header class="header">
+    <div class="header-logo">StadiumFlow <span style="font-size:0.8em;opacity:0.7">AI</span></div>
+    <div class="header-actions">
+      <div id="fan-weather-mini" class="weather-mini" style="font-size:0.75rem"></div>
+      <button class="header-icon-btn" id="btn-fan-emergency-header" aria-label="Emergency" title="Emergency">
+        <i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i>
+      </button>
+      <button class="header-icon-btn" id="btn-fan-back" aria-label="Switch Role">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="content-area" id="fan-content">
+
+    <!-- ── HOME VIEW ──────────────────────────────────────────────────── -->
+    <section id="view-home" class="view active" aria-label="Home Dashboard">
+
+      <!-- Hero Card -->
+      <div class="hero-card" id="hero-card">
+        <div class="hero-match-badge"><i class="fa-solid fa-circle-dot" style="color:var(--success);font-size:0.6rem"></i> LIVE · Brazil vs Germany</div>
+        <div class="hero-teams">Brazil <span style="color:var(--text-muted);font-weight:400">vs</span> Germany</div>
+        <div class="hero-status-pill"><div class="hero-status-dot"></div> Stadium Operating Normally</div>
+        <div class="hero-stats-grid">
+          <div class="hero-stat">
+            <div class="hero-stat-label">🚪 Entry Gate</div>
+            <div class="hero-stat-value" id="hero-gate">Gate B</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">⏱ Entry Time</div>
+            <div class="hero-stat-value" id="hero-wait">4 min</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">💺 Seat</div>
+            <div class="hero-stat-value">A-214</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">👥 Crowd</div>
+            <div class="hero-stat-value" id="hero-crowd">Medium</div>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-sm" id="btn-go-assistant" aria-label="Open AI Assistant">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Assistant
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btn-go-navigate" aria-label="Navigate">
+            <i class="fa-solid fa-route"></i> Navigate
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btn-go-crowd" aria-label="Live Stadium">
+            <i class="fa-solid fa-chart-simple"></i> Live
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Suggestion Box -->
+      <div class="ai-box" id="ai-suggestion-box">
+        <div class="ai-box-header">
+          <i class="fa-solid fa-wand-magic-sparkles ai-box-icon" style="color:var(--primary)"></i>
+          <span class="ai-box-label">Gemini AI Recommendation</span>
+        </div>
+        <div class="ai-box-title" id="ai-suggestion-title">Calculating best route...</div>
+        <div class="ai-box-body"  id="ai-suggestion-body">Analyzing real-time crowd data for you.</div>
+      </div>
+
+      <!-- Live Alerts -->
+      <div>
+        <div class="section-label">Live Alerts</div>
+        <div id="home-alerts" class="d-flex flex-col gap-xs"></div>
+      </div>
+
+      <!-- Transport Status -->
+      <div>
+        <div class="section-label">Getting Here</div>
+        <div id="home-transport" class="d-flex flex-col gap-xs"></div>
+      </div>
+
+      <!-- Weather & Match Info -->
+      <div class="card glass" style="padding:0.9rem 1rem">
+        <div class="card-header" style="margin-bottom:0.5rem">
+          <span class="card-title">Today's Match</span>
+          <span class="text-xs text-muted">MetLife Stadium</span>
+        </div>
+        <div class="stat-row"><span class="stat-label">⚽ Match</span><span class="stat-value">Brazil vs Germany</span></div>
+        <div class="stat-row"><span class="stat-label">🕘 Kickoff</span><span class="stat-value">21:00 EST</span></div>
+        <div class="stat-row"><span class="stat-label">⏳ Countdown</span><span class="stat-value text-primary" id="kickoff-countdown">47 min</span></div>
+        <div class="stat-row"><span class="stat-label">🌤 Weather</span><span class="stat-value" id="home-weather">24°C Cloudy</span></div>
+        <div class="stat-row"><span class="stat-label">🏟 Capacity</span><span class="stat-value" id="home-capacity">82,000 / 82,500</span></div>
+      </div>
+    </section>
+
+    <!-- ── AI ASSISTANT VIEW ───────────────────────────────────────────── -->
+    <section id="view-assistant" class="view" aria-label="AI Assistant">
+      <div class="chat-container" style="height:calc(100vh - 200px)">
+        <div class="chat-header">
+          <div class="d-flex items-center gap-sm">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary-dim),var(--secondary-dim));border:1px solid rgba(0,209,255,0.3);display:flex;align-items:center;justify-content:center;font-size:1.1rem">🤖</div>
+            <div>
+              <div style="font-weight:700;font-size:0.9rem">StadiumFlow AI</div>
+              <div style="font-size:0.7rem;color:var(--success)">● Powered by Gemini</div>
+            </div>
+          </div>
+          <div class="d-flex gap-sm" style="margin-top:0.75rem">
+            <div class="lang-selector" id="lang-selector">
+              <button class="lang-chip active" data-lang="en" aria-label="English">EN</button>
+              <button class="lang-chip" data-lang="es" aria-label="Spanish">ES</button>
+              <button class="lang-chip" data-lang="fr" aria-label="French">FR</button>
+              <button class="lang-chip" data-lang="ar" aria-label="Arabic">AR</button>
+              <button class="lang-chip" data-lang="hi" aria-label="Hindi">HI</button>
+              <button class="lang-chip" data-lang="ja" aria-label="Japanese">JA</button>
+              <button class="lang-chip" data-lang="pt" aria-label="Portuguese">PT</button>
+            </div>
+          </div>
+          <div class="suggested-prompts mt-sm" id="suggested-prompts">
+            <button class="prompt-chip" data-prompt="Where should I enter?" aria-label="Suggested: Where should I enter?">🚪 Where should I enter?</button>
+            <button class="prompt-chip" data-prompt="Find the nearest washroom" aria-label="Suggested: Find nearest washroom">🚻 Nearest washroom</button>
+            <button class="prompt-chip" data-prompt="Which food stall has the shortest queue?" aria-label="Suggested: Shortest food queue">🍔 Shortest queue?</button>
+            <button class="prompt-chip" data-prompt="What's the best way to get to parking after the match?" aria-label="Suggested: Post-match parking">🅿️ Post-match parking</button>
+            <button class="prompt-chip" data-prompt="How long until kickoff?" aria-label="Suggested: Kickoff time">⏱ Time to kickoff?</button>
+            <button class="prompt-chip" data-prompt="Translate: Where is my seat? to Spanish" aria-label="Suggested: Translate">🌐 Translate phrase</button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages" role="log" aria-live="polite"></div>
+
+        <div class="chat-input-area">
+          <textarea
+            class="chat-input"
+            id="chat-input"
+            placeholder="Ask about navigation, food, queues..."
+            rows="1"
+            aria-label="Chat with StadiumFlow AI"
+            maxlength="500"
+          ></textarea>
+          <div class="d-flex flex-col gap-xs">
+            <button class="chat-send-btn" id="chat-send-btn" aria-label="Send message">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+            <button class="btn btn-ghost btn-icon" id="chat-clear-btn" title="Clear chat" aria-label="Clear conversation" style="width:36px;height:36px">
+              <i class="fa-solid fa-eraser" style="font-size:0.8rem"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NAVIGATE VIEW ───────────────────────────────────────────────── -->
+    <section id="view-navigate" class="view" aria-label="Smart Navigation">
+      <div class="section-label">Choose Route Type</div>
+      <div class="route-type-selector" id="route-type-selector" role="group" aria-label="Route type">
+        <button class="route-chip active" data-route="fastest"       aria-pressed="true">⚡ Fastest</button>
+        <button class="route-chip"        data-route="least-crowded" aria-pressed="false">🌿 Least Crowded</button>
+        <button class="route-chip"        data-route="accessible"    aria-pressed="false">♿ Accessible</button>
+        <button class="route-chip"        data-route="family"        aria-pressed="false">👨‍👩‍👧 Family</button>
+        <button class="route-chip"        data-route="emergency"     aria-pressed="false">🚨 Emergency</button>
+      </div>
+
+      <div class="map-container" id="map-container">
+        <svg class="stadium-svg-map" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" id="stadium-svg" aria-label="Stadium map">
+          <!-- Stadium outline -->
+          <ellipse cx="160" cy="120" rx="140" ry="100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2" stroke-dasharray="6,4"/>
+          <!-- Inner field -->
+          <rect x="100" y="70" width="120" height="100" rx="8" fill="rgba(0,209,255,0.04)" stroke="rgba(0,209,255,0.15)" stroke-width="1.5"/>
+          <!-- Gate nodes -->
+          <circle cx="160" cy="22" r="7" fill="var(--primary)"  id="gateA-dot"/>
+          <circle cx="160" cy="218" r="7" fill="var(--success)" id="gateB-dot"/>
+          <circle cx="22"  cy="120" r="7" fill="var(--warning)" id="gateE-dot"/>
+          <circle cx="298" cy="120" r="7" fill="var(--danger)"  id="gateD-dot"/>
+          <circle cx="32"  cy="40"  r="5" fill="var(--secondary)" id="gateC-dot"/>
+          <!-- Gate labels -->
+          <text x="160" y="14" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle" font-family="Inter">Gate A</text>
+          <text x="160" y="234" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle" font-family="Inter">Gate B</text>
+          <text x="8"   y="135" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle" font-family="Inter">E</text>
+          <text x="308" y="125" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle" font-family="Inter">D</text>
+          <!-- User marker -->
+          <circle cx="160" cy="218" r="10" fill="rgba(0,209,255,0.2)" id="user-pulse"/>
+          <circle cx="160" cy="218" r="5"  fill="var(--primary)" id="user-dot"/>
+          <!-- Seat marker -->
+          <circle cx="148" cy="95" r="5" fill="var(--gold)" id="seat-dot"/>
+          <text x="148" y="88" fill="var(--gold)" font-size="7" text-anchor="middle" font-family="Inter">A-214</text>
+          <!-- Route path placeholder -->
+          <path id="route-svg-path" class="route-path" d="" fill="none"/>
+        </svg>
+      </div>
+
+      <div class="route-eta-bar" id="route-eta-bar">
+        <div class="route-eta-item"><div class="route-eta-value" id="eta-time">—</div><div class="route-eta-label">ETA</div></div>
+        <div style="width:1px;height:30px;background:var(--glass-border)"></div>
+        <div class="route-eta-item"><div class="route-eta-value" id="eta-dist">—</div><div class="route-eta-label">Distance</div></div>
+        <div style="width:1px;height:30px;background:var(--glass-border)"></div>
+        <div class="route-eta-item"><div class="route-eta-value" id="eta-crowd">—</div><div class="route-eta-label">Crowd</div></div>
+      </div>
+
+      <div class="nav-steps-card" id="nav-steps-card" aria-live="polite">
+        <div style="padding:1.2rem;text-align:center;color:var(--text-muted);font-size:0.85rem">
+          <i class="fa-solid fa-route" style="font-size:1.5rem;margin-bottom:0.5rem;display:block;color:var(--primary)"></i>
+          Select a route type above to get AI-powered directions
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="btn-get-route" aria-label="Get AI route">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Get AI Navigation Plan
+      </button>
+    </section>
+
+    <!-- ── CROWD VIEW ──────────────────────────────────────────────────── -->
+    <section id="view-crowd" class="view" aria-label="Live Crowd Intelligence">
+
+      <div class="ai-box" id="crowd-ai-insight">
+        <div class="ai-box-header">
+          <i class="fa-solid fa-brain ai-box-icon" style="color:var(--primary)"></i>
+          <span class="ai-box-label">AI Crowd Analysis</span>
+        </div>
+        <div class="ai-box-title" id="crowd-ai-title">Analyzing crowd patterns...</div>
+        <div class="ai-box-body"  id="crowd-ai-body">Gemini is processing real-time sensor data.</div>
+      </div>
+
+      <div>
+        <div class="section-label">Gate Predictions (Next 10 min)</div>
+        <div class="gate-prediction-grid" id="gate-predictions"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Zone Heatmap</div>
+        <div class="heatmap-grid" id="heatmap-zones"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Parking Availability</div>
+        <div id="parking-status" class="d-flex flex-col gap-xs"></div>
+      </div>
+    </section>
+
+    <!-- ── FOOD VIEW ───────────────────────────────────────────────────── -->
+    <section id="view-food" class="view" aria-label="Smart Food Assistant">
+
+      <div class="ai-box" id="food-ai-box">
+        <div class="ai-box-header">
+          <i class="fa-solid fa-utensils ai-box-icon" style="color:var(--warning)"></i>
+          <span class="ai-box-label">AI Food Recommendation</span>
+        </div>
+        <div class="ai-box-title" id="food-ai-title">Finding best options for you...</div>
+        <div class="ai-box-body"  id="food-ai-body">Checking queue times and your preferences.</div>
+      </div>
+
+      <!-- Dietary filter -->
+      <div>
+        <div class="section-label">Dietary Preference</div>
+        <div class="scroll-x" id="dietary-filters">
+          <button class="route-chip active" data-diet="all"           aria-pressed="true">🍽️ All</button>
+          <button class="route-chip" data-diet="vegetarian"  aria-pressed="false">🥗 Vegetarian</button>
+          <button class="route-chip" data-diet="vegan"       aria-pressed="false">🌱 Vegan</button>
+          <button class="route-chip" data-diet="halal"       aria-pressed="false">☪️ Halal</button>
+          <button class="route-chip" data-diet="gluten-free" aria-pressed="false">🌾 Gluten-Free</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">All Food Stalls — Live Queue</div>
+        <div id="food-list" class="d-flex flex-col gap-sm"></div>
+      </div>
+    </section>
+
+    <!-- ── EMERGENCY VIEW ──────────────────────────────────────────────── -->
+    <section id="view-emergency" class="view" aria-label="Emergency Assistance" aria-live="assertive">
+
+      <div class="emergency-card" id="emergency-main-card">
+        <div class="emergency-icon">🚨</div>
+        <div class="emergency-title" style="margin-bottom:0.35rem">Emergency Assistance</div>
+        <div class="text-muted text-small mb-md">Gemini AI will generate your safest route instantly</div>
+
+        <div class="d-flex flex-col gap-sm mb-md" role="group" aria-label="Emergency type">
+          <button class="btn btn-emergency btn-full" id="btn-emergency-fire" aria-label="Fire emergency">
+            🔥 Fire / Smoke
+          </button>
+          <button class="btn btn-danger btn-full" id="btn-emergency-medical" aria-label="Medical emergency" style="font-size:1rem;font-weight:700">
+            🏥 Medical Emergency
+          </button>
+          <button class="btn btn-danger btn-full" id="btn-emergency-evacuate" aria-label="Evacuation" style="font-size:1rem;font-weight:700">
+            🚪 General Evacuation
+          </button>
+          <button class="btn btn-danger btn-full" id="btn-emergency-security" aria-label="Security threat">
+            🛡️ Security Threat
+          </button>
+        </div>
+
+        <div id="emergency-plan-card" class="hidden">
+          <div class="section-label" style="color:var(--danger)">AI Emergency Plan</div>
+          <div id="emergency-steps" class="d-flex flex-col gap-xs"></div>
+          <div style="margin-top:0.75rem;padding:0.75rem;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25);border-radius:var(--radius-md);font-size:0.82rem;color:var(--text-sub)" id="emergency-broadcast"></div>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-header">
+          <span class="card-title" style="color:var(--danger)">Emergency Contacts</span>
+        </div>
+        <div class="stat-row"><span class="stat-label">🏥 Medical Center A</span><span class="stat-value text-success">Available</span></div>
+        <div class="stat-row"><span class="stat-label">📍 Location</span><span class="stat-value text-xs">Gate B Entrance</span></div>
+        <div class="stat-row"><span class="stat-label">🚒 Emergency</span><span class="stat-value text-danger font-bold">911</span></div>
+        <div class="stat-row"><span class="stat-label">📞 Stadium Ops</span><span class="stat-value">+1 555-0202</span></div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-header"><span class="card-title">Nearest Exits</span></div>
+        <div id="exit-list" class="d-flex flex-col gap-xs"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Fan Bottom Navigation (6 items) -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-item active" data-tab="home"      role="tab" aria-selected="true"  aria-label="Home">
+      <i class="fa-solid fa-house"></i><span>Home</span>
+    </button>
+    <button class="nav-item" data-tab="assistant" role="tab" aria-selected="false" aria-label="AI Assistant">
+      <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI</span>
+    </button>
+    <button class="nav-item" data-tab="navigate"  role="tab" aria-selected="false" aria-label="Navigate">
+      <i class="fa-solid fa-route"></i><span>Navigate</span>
+    </button>
+    <button class="nav-item" data-tab="crowd"     role="tab" aria-selected="false" aria-label="Crowd">
+      <i class="fa-solid fa-chart-simple"></i><span>Crowd</span>
+    </button>
+    <button class="nav-item" data-tab="food"      role="tab" aria-selected="false" aria-label="Food">
+      <i class="fa-solid fa-utensils"></i><span>Food</span>
+    </button>
+    <button class="nav-item" data-tab="emergency" role="tab" aria-selected="false" aria-label="Emergency" style="color:var(--danger)">
+      <i class="fa-solid fa-triangle-exclamation"></i><span>SOS</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ORGANIZER COMMAND CENTER
+═══════════════════════════════════════════════════════════════════════ -->
+<div class="app-container hidden" id="organizer-app">
+  <header class="header">
+    <div class="header-logo" style="background:linear-gradient(135deg,var(--secondary),var(--primary));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">
+      Command Center
+    </div>
+    <div class="header-actions">
+      <span class="status-indicator" id="org-status">Normal</span>
+      <button class="header-icon-btn" id="btn-org-back" aria-label="Back to role selector">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <!-- AI Operations Summary -->
+    <div class="command-center-header" id="org-command-header">
+      <div class="section-label" style="color:var(--secondary)">AI Situation Report</div>
+      <div class="skeleton skeleton-text w80" id="org-ai-summary-skeleton"></div>
+      <div class="hidden" id="org-ai-summary-text" style="font-size:0.88rem;color:var(--text-sub);line-height:1.6"></div>
+      <button class="btn btn-ghost btn-sm mt-sm" id="btn-refresh-summary" aria-label="Refresh AI summary">
+        <i class="fa-solid fa-rotate"></i> Refresh AI Summary
+      </button>
+    </div>
+
+    <!-- KPI Grid -->
+    <div class="insights-grid" id="org-kpi-grid">
+      <div class="insight-card">
+        <div class="insight-value" id="kpi-attendance">—</div>
+        <div class="insight-label">Attendance</div>
+        <div class="insight-trend stable" id="kpi-attendance-trend">—</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value text-danger" id="kpi-critical-zones">—</div>
+        <div class="insight-label">Critical Zones</div>
+        <div class="insight-trend up" id="kpi-zones-trend">—</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value text-success" id="kpi-gates-open">—</div>
+        <div class="insight-label">Gates Open</div>
+        <div class="insight-trend stable">All operational</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value text-primary" id="kpi-volunteers">—</div>
+        <div class="insight-label">Volunteers Active</div>
+        <div class="insight-trend stable" id="kpi-vol-trend">—</div>
+      </div>
+    </div>
+
+    <!-- Critical Alerts -->
+    <div>
+      <div class="section-label">Critical Alerts</div>
+      <div id="org-critical-alerts" class="d-flex flex-col gap-xs"></div>
+    </div>
+
+    <!-- AI Immediate Actions -->
+    <div class="card glass">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--secondary)"><i class="fa-solid fa-bolt"></i> AI Immediate Actions</span>
+        <span class="text-xs text-muted">Gemini recommended</span>
+      </div>
+      <div id="org-actions" class="d-flex flex-col"></div>
+    </div>
+
+    <!-- Gate Management -->
+    <div>
+      <div class="section-label">Gate Control</div>
+      <div id="org-gates" class="d-flex flex-col gap-xs"></div>
+    </div>
+
+    <!-- Volunteer Deployment -->
+    <div class="card glass">
+      <div class="card-header">
+        <span class="card-title">AI Volunteer Deployment</span>
+        <button class="btn btn-ghost btn-xs" id="btn-redeploy" aria-label="Get redeployment plan">Redeploy AI</button>
+      </div>
+      <div id="org-volunteer-deployments" class="d-flex flex-col"></div>
+    </div>
+
+    <!-- Digital Twin -->
+    <div>
+      <div class="section-label">Live Digital Twin</div>
+      <div class="digital-twin-container" id="digital-twin" aria-label="Stadium digital twin visualization">
+        <svg width="100%" height="100%" viewBox="0 0 360 280" id="twin-svg" aria-hidden="true">
+          <!-- Outer ring -->
+          <ellipse cx="180" cy="140" rx="165" ry="125" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>
+          <!-- Field -->
+          <rect x="110" y="85" width="140" height="110" rx="10" fill="rgba(0,200,100,0.06)" stroke="rgba(0,200,100,0.15)" stroke-width="1.5"/>
+          <!-- Gate labels -->
+          <text x="180" y="18" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" font-family="Inter,sans-serif">Gate A</text>
+          <text x="180" y="270" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" font-family="Inter,sans-serif">Gate B</text>
+          <text x="15"  y="145" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" font-family="Inter,sans-serif">E</text>
+          <text x="347" y="145" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" font-family="Inter,sans-serif">D</text>
+          <!-- Dynamic zone overlays (populated by JS) -->
+          <rect id="twin-zone-north" x="60"  y="25"  width="240" height="55"  rx="6" fill="rgba(255,71,87,0.3)"  opacity="0.7"/>
+          <rect id="twin-zone-south" x="60"  y="200" width="240" height="55"  rx="6" fill="rgba(0,230,118,0.3)" opacity="0.7"/>
+          <rect id="twin-zone-merch" x="20"  y="85"  width="80"  height="110" rx="6" fill="rgba(255,71,87,0.4)"  opacity="0.7"/>
+          <rect id="twin-zone-vip"   x="258" y="85"  width="80"  height="110" rx="6" fill="rgba(0,209,255,0.2)" opacity="0.7"/>
+          <!-- Medical icons -->
+          <text x="180" y="145" fill="rgba(255,255,255,0.3)" font-size="10" text-anchor="middle" font-family="Inter">🏟</text>
+          <!-- Volunteer markers -->
+          <circle cx="180" cy="27"  r="5" fill="rgba(0,230,118,0.8)" id="vol-north"/>
+          <circle cx="180" cy="253" r="5" fill="rgba(0,230,118,0.8)" id="vol-south"/>
+          <circle cx="60"  cy="140" r="5" fill="rgba(0,230,118,0.8)" id="vol-west"/>
+          <circle cx="300" cy="140" r="5" fill="rgba(255,167,38,0.8)" id="vol-east"/>
+        </svg>
+      </div>
+      <div class="twin-legend mt-sm">
+        <div class="twin-legend-item"><div class="twin-legend-dot" style="background:rgba(0,230,118,0.7)"></div>Low</div>
+        <div class="twin-legend-item"><div class="twin-legend-dot" style="background:rgba(255,167,38,0.7)"></div>Medium</div>
+        <div class="twin-legend-item"><div class="twin-legend-dot" style="background:rgba(255,71,87,0.7)"></div>High</div>
+        <div class="twin-legend-item"><div class="twin-legend-dot" style="background:rgba(0,230,118,0.8);border-radius:50%"></div>Volunteers</div>
+      </div>
+    </div>
+
+    <!-- Sustainability Dashboard -->
+    <div class="card glass">
+      <div class="card-header">
+        <span class="card-title">♻️ Sustainability Dashboard</span>
+        <span class="text-xs text-success" id="eco-score-label">Eco Score: 82</span>
+      </div>
+      <div class="d-flex items-center gap-md mb-md">
+        <div class="eco-score-ring" style="--score-pct:295deg">
+          <div class="eco-score-inner">
+            <div class="eco-score-num" id="eco-score">82</div>
+            <div class="eco-score-label">ECO</div>
+          </div>
+        </div>
+        <div style="flex:1;font-size:0.82rem;color:var(--text-sub);line-height:1.5" id="eco-ai-tip">
+          AI Tip: Great sustainability performance! Encourage fans to use refill stations to push score above 85.
+        </div>
+      </div>
+      <div id="eco-metrics"></div>
+    </div>
+
+    <!-- Broadcast Control -->
+    <div class="card glass">
+      <div class="card-header"><span class="card-title" style="color:var(--danger)">Global Controls</span></div>
+      <div class="d-flex gap-sm">
+        <button class="btn btn-danger flex-1" id="btn-org-emergency" aria-label="Trigger emergency evacuation">
+          <i class="fa-solid fa-person-running"></i> Trigger Evacuation
         </button>
-        <button class="btn btn-danger w-250" id="btn-role-admin" aria-label="Enter as Staff">
-            <i class="fa-solid fa-clipboard-user"></i> Enter as Staff
+        <button class="btn btn-ghost flex-1" id="btn-org-broadcast" aria-label="Broadcast alert">
+          <i class="fa-solid fa-bullhorn"></i> Broadcast
         </button>
+      </div>
     </div>
 
-    <!-- USER APP -->
-    <div class="app-container hidden" id="user-app">
-        <header class="header">
-            <div class="header-title">StadiumFlow</div>
-            <div class="cursor-pointer" aria-label="Notifications" role="button" tabindex="0"><i class="fa-regular fa-bell text-main"></i></div>
-        </header>
-
-        <main class="content-area">
-            
-            <!-- HOME DASHBOARD VIEW -->
-            <section id="view-home" class="view active">
-                
-                <!-- The Brain's Primary Output -->
-                <div id="ai-suggestion-box" class="recommendation-box glass">
-                    <!-- Populated by JS -->
-                </div>
-
-                <div class="card glass">
-                    <h3 class="text-secondary"><i class="fa-solid fa-sign-in-alt"></i> Fast Entry Plan</h3>
-                    <div class="stat-row">
-                        <span>Assigned Gate</span>
-                        <span class="text-danger" id="assigned-gate">Gate A (25m wait)</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>AI Suggestion</span>
-                        <span class="text-success" id="suggested-gate"><strong>Calculating...</strong></span>
-                    </div>
-                    <button class="btn btn-primary w-100 mt-1 p-05" id="btn-accept-gate">Switch to Fast Gate</button>
-                </div>
-
-                <div class="card glass">
-                    <h3><i class="fa-solid fa-burger"></i> Food Quick-Check</h3>
-                    <div class="stat-row">
-                        <span>Burger Stand (Sec 102)</span>
-                        <span class="text-danger">22m Wait</span>
-                    </div>
-                    <div id="food-suggestion" class="text-primary text-small mt-05">
-                        <!-- AI recommends alternatives -->
-                    </div>
-                </div>
-            </section>
-
-
-            <!-- MAP & ROUTING VIEW (WOW FEATURE) -->
-            <section id="view-map" class="view">
-                <h2>Live Routing</h2>
-                <div class="map-container">
-                    <div class="stadium-map">
-                        <div class="map-node node-gate" data-label="Entry"></div>
-                        <div class="map-node node-seat" data-label="Your Seat"></div>
-                        <div class="map-node node-food" data-label="Congested Area" id="hotzone"></div>
-
-                        <svg class="route-svg">
-                            <!-- Congested default path -->
-                            <path class="route-path congested" id="default-path" d="M 150,30 Q 150,150 180,240" />
-                            <!-- Smart alternative path (hidden initially) -->
-                            <path class="route-path alternative hidden" id="smart-path" d="M 150,30 Q 50,150 180,240" />
-                        </svg>
-                    </div>
-                </div>
-
-                <div id="route-alert" class="recommendation-box danger glass mt-1">
-                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Congestion Detected</strong>
-                    <span class="text-small">The main concourse is blocked. Delay: 10 mins.</span>
-                    <button class="btn btn-primary w-100 mt-05 p-05" id="btn-activate-route">Activate Smart Route</button>
-                </div>
-            </section>
-
-
-            <!-- DIGITAL QUEUES VIEW -->
-            <section id="view-queues" class="view">
-                <h2>Digital Lines</h2>
-                <p class="text-muted mb-1">Wait anywhere, not in line.</p>
-                
-                <div id="queue-list" class="flex-column" style="gap: 1rem;">
-                    <!-- JS populated -->
-                </div>
-            </section>
-
-        </main>
-
-        <nav class="bottom-nav">
-            <div class="nav-item active" data-tab="home" role="button" tabindex="0" aria-label="Home">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </div>
-            <div class="nav-item" data-tab="map" role="button" tabindex="0" aria-label="Map & Routing">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>Map & Routing</span>
-            </div>
-            <div class="nav-item" data-tab="queues" role="button" tabindex="0" aria-label="Digital Queues">
-                <i class="fa-solid fa-clock"></i>
-                <span>Queues</span>
-            </div>
-        </nav>
+    <!-- Activity Log -->
+    <div class="card glass">
+      <div class="card-header"><span class="card-title">Activity Log</span><button class="btn btn-ghost btn-xs" id="btn-clear-log">Clear</button></div>
+      <div id="org-log" style="max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:0.35rem">
+        <div class="text-xs text-muted">[System] Command Center initialized. Gemini AI connected.</div>
+      </div>
     </div>
 
-    <!-- ADMIN APP -->
-    <div class="app-container hidden" id="admin-app">
-        <header class="header">
-            <div class="header-title text-danger">Staff Command Center</div>
-            <button class="btn btn-danger p-05" id="btn-admin-exit" aria-label="Exit Admin">Exit</button>
-        </header>
-        <main class="content-area">
-            
-            <div class="admin-grid">
-                <!-- Zone Crowds -->
-                <div class="card glass">
-                    <h3 class="text-danger"><i class="fa-solid fa-users-viewfinder"></i> Live Zone Density</h3>
-                    <div id="admin-zones" class="flex-gap-05 mt-1">
-                        <!-- JS populated -->
-                    </div>
-                </div>
+  </main>
+</div>
 
-                <!-- Gate Control -->
-                <div class="card glass">
-                    <h3 class="text-warning"><i class="fa-solid fa-door-open"></i> Gate Management</h3>
-                    <div id="admin-gates" class="flex-column mt-1" style="gap: 1rem;">
-                        <!-- JS populated -->
-                    </div>
-                </div>
-            </div>
+<!-- ═══════════════════════════════════════════════════════════════════════
+     VOLUNTEER APP
+═══════════════════════════════════════════════════════════════════════ -->
+<div class="app-container hidden" id="volunteer-app">
+  <header class="header">
+    <div class="header-logo" style="background:linear-gradient(135deg,var(--success),#00B8D4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">
+      Volunteer Hub
+    </div>
+    <div class="header-actions">
+      <span class="status-indicator">🦺 On Duty</span>
+      <button class="header-icon-btn" id="btn-vol-back" aria-label="Back to role selector">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
 
-            <!-- Emergency Actions -->
-            <div class="card glass border-danger">
-                <h3 class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Global Controls</h3>
-                <div class="flex-gap-1 mt-1">
-                    <button class="btn btn-danger flex-1" id="btn-trigger-emergency"><i class="fa-solid fa-person-running"></i> Trigger Emergency Evacuation</button>
-                    <button class="btn border-primary flex-1 text-primary" id="btn-broadcast-alert"><i class="fa-solid fa-bullhorn"></i> Broadcast Alert</button>
-                </div>
-            </div>
+  <main class="content-area">
 
-            <!-- Activity Log -->
-            <div class="card glass mt-1">
-                <h3><i class="fa-solid fa-list-ul"></i> Activity Log</h3>
-                <div id="admin-log" class="flex-column" style="max-height: 150px; overflow-y: auto;">
-                    <div class="text-small text-muted mb-1">[System] Command Center initialized.</div>
-                </div>
-            </div>
-
-        </main>
+    <div class="ai-box">
+      <div class="ai-box-header">
+        <i class="fa-solid fa-wand-magic-sparkles ai-box-icon" style="color:var(--success)"></i>
+        <span class="ai-box-label" style="color:var(--success)">AI Task Assignment</span>
+      </div>
+      <div class="ai-box-title" id="vol-ai-task">Fetching your assignments...</div>
+      <div class="ai-box-body"  id="vol-ai-detail">Gemini is analyzing current stadium needs.</div>
     </div>
 
-    <!-- Replace statically referenced JS with our main module -->
-    <script type="module" src="src/app.js"></script>
+    <!-- Quick Actions -->
+    <div>
+      <div class="section-label">Quick Actions</div>
+      <div class="quick-action-grid">
+        <button class="quick-action-card" id="vol-btn-crowd" aria-label="Crowd control">
+          <div class="quick-action-icon">👥</div>
+          <div class="quick-action-label">Crowd Control</div>
+          <div class="quick-action-sub">Where am I needed?</div>
+        </button>
+        <button class="quick-action-card" id="vol-btn-translate" aria-label="Translate">
+          <div class="quick-action-icon">🌐</div>
+          <div class="quick-action-label">Translate</div>
+          <div class="quick-action-sub">Help a visitor</div>
+        </button>
+        <button class="quick-action-card" id="vol-btn-wheelchair" aria-label="Wheelchair assistance">
+          <div class="quick-action-icon">♿</div>
+          <div class="quick-action-label">Wheelchair</div>
+          <div class="quick-action-sub">Request assistance</div>
+        </button>
+        <button class="quick-action-card" id="vol-btn-lost-child" aria-label="Lost child">
+          <div class="quick-action-icon">👧</div>
+          <div class="quick-action-label">Lost Child</div>
+          <div class="quick-action-sub">Start workflow</div>
+        </button>
+        <button class="quick-action-card" id="vol-btn-medical" aria-label="Medical assistance">
+          <div class="quick-action-icon">🏥</div>
+          <div class="quick-action-label">Medical</div>
+          <div class="quick-action-sub">Request medic</div>
+        </button>
+        <button class="quick-action-card" id="vol-btn-incident" aria-label="Report incident">
+          <div class="quick-action-icon">⚠️</div>
+          <div class="quick-action-label">Incident</div>
+          <div class="quick-action-sub">Report to command</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Response area for volunteer -->
+    <div id="vol-ai-response" class="hidden">
+      <div class="section-label">AI Guidance</div>
+      <div class="ai-box success" id="vol-response-box">
+        <div class="ai-box-header">
+          <i class="fa-solid fa-robot ai-box-icon" style="color:var(--success)"></i>
+          <span class="ai-box-label" style="color:var(--success)">Gemini Response</span>
+        </div>
+        <div id="vol-response-text" style="font-size:0.88rem;color:var(--text-sub);line-height:1.6;white-space:pre-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Translation Tool -->
+    <div class="card glass" id="vol-translate-tool" style="display:none">
+      <div class="card-header"><span class="card-title">Translation Assistant</span></div>
+      <select id="vol-translate-lang" class="chat-input" style="max-height:none;min-height:auto;height:40px;padding:0.4rem 0.75rem" aria-label="Target language">
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="ar">Arabic</option>
+        <option value="hi">Hindi</option>
+        <option value="ja">Japanese</option>
+        <option value="pt">Portuguese</option>
+      </select>
+      <textarea class="chat-input mt-sm" id="vol-translate-input" placeholder="Type message to translate..." rows="2" aria-label="Text to translate"></textarea>
+      <button class="btn btn-primary btn-full mt-sm" id="vol-translate-btn" aria-label="Translate">
+        <i class="fa-solid fa-language"></i> Translate
+      </button>
+      <div id="vol-translate-result" class="mt-sm hidden" style="padding:0.75rem;background:var(--glass-bg-2);border:1px solid var(--glass-border);border-radius:var(--radius-md);font-size:0.9rem;color:var(--text-main)"></div>
+    </div>
+
+    <!-- Zone Status -->
+    <div>
+      <div class="section-label">Zone Status</div>
+      <div class="heatmap-grid" id="vol-zone-status"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAFF APP
+═══════════════════════════════════════════════════════════════════════ -->
+<div class="app-container hidden" id="staff-app">
+  <header class="header">
+    <div class="header-logo" style="background:linear-gradient(135deg,var(--warning),#FF8C00);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">
+      Staff Operations
+    </div>
+    <div class="header-actions">
+      <button class="header-icon-btn" id="btn-staff-back" aria-label="Back to role selector">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <!-- Gate Control -->
+    <div>
+      <div class="section-label">Gate Management</div>
+      <div id="staff-gates" class="d-flex flex-col gap-xs"></div>
+    </div>
+
+    <!-- Zone Density -->
+    <div>
+      <div class="section-label">Live Zone Density</div>
+      <div class="heatmap-grid" id="staff-zones"></div>
+    </div>
+
+    <!-- Cleaning / Services -->
+    <div class="card glass">
+      <div class="card-header"><span class="card-title">Facility Services</span></div>
+      <div class="stat-row"><span class="stat-label">🧹 Cleaning Team</span><span class="stat-value text-success">Active</span></div>
+      <div class="stat-row"><span class="stat-label">🚿 Water Refills</span><span class="stat-value text-primary">4,820 today</span></div>
+      <div class="stat-row"><span class="stat-label">🗑️ Waste Bins</span><span class="stat-value text-warning">3 Need Attention</span></div>
+      <div class="stat-row"><span class="stat-label">⚡ Power Systems</span><span class="stat-value text-success">Normal</span></div>
+      <div style="margin-top:0.75rem">
+        <button class="btn btn-ghost btn-full btn-sm" id="btn-staff-request-cleaning" aria-label="Request cleaning">
+          <i class="fa-solid fa-broom"></i> Request Cleaning Team
+        </button>
+      </div>
+    </div>
+
+    <!-- Emergency Broadcast -->
+    <div class="card glass" style="border:1px solid rgba(255,71,87,0.3)">
+      <div class="card-header"><span class="card-title" style="color:var(--danger)">Emergency Controls</span></div>
+      <div class="d-flex gap-sm">
+        <button class="btn btn-danger flex-1" id="btn-staff-emergency" aria-label="Trigger emergency">
+          <i class="fa-solid fa-person-running"></i> Emergency
+        </button>
+        <button class="btn btn-ghost flex-1" id="btn-staff-broadcast" aria-label="Broadcast alert">
+          <i class="fa-solid fa-bullhorn"></i> Alert
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card glass">
+      <div class="card-header"><span class="card-title">Operations Log</span></div>
+      <div id="staff-log" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:0.35rem">
+        <div class="text-xs text-muted">[System] Staff Operations initialized.</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── JS ─────────────────────────────────────────────────────────────── -->
+<script type="module" src="src/app.js"></script>
 </body>
 </html>

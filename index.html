@@ -118,14 +118,14 @@
         </div>
       </div>
 
-      <!-- AI Suggestion Box -->
-      <div class="ai-box" id="ai-suggestion-box">
-        <div class="ai-box-header">
-          <i class="fa-solid fa-wand-magic-sparkles ai-box-icon" style="color:var(--primary)"></i>
-          <span class="ai-box-label">Gemini AI Recommendation</span>
+      <!-- Proactive AI Card (rendered dynamically in fan.js) -->
+      <div id="proactive-ai-card" class="proactive-card" role="status" aria-live="polite" aria-label="AI Recommendation">
+        <div style="flex-shrink:0;font-size:1.4rem" aria-hidden="true">✨</div>
+        <div style="flex:1;min-width:0">
+          <div id="proactive-title" style="font-size:0.85rem;font-weight:600;color:var(--text-main);margin-bottom:0.3rem">Analyzing your match day situation...</div>
+          <div id="proactive-body" style="font-size:0.78rem;color:var(--text-sub)"></div>
+          <button id="proactive-action-btn" class="btn btn-xs mt-xs hidden" style="border-color:var(--primary);color:var(--primary);background:var(--primary-dim)">Take Action</button>
         </div>
-        <div class="ai-box-title" id="ai-suggestion-title">Calculating best route...</div>
-        <div class="ai-box-body"  id="ai-suggestion-body">Analyzing real-time crowd data for you.</div>
       </div>
 
       <!-- Live Alerts -->
@@ -146,13 +146,52 @@
           <span class="card-title">Today's Match</span>
           <span class="text-xs text-muted">MetLife Stadium</span>
         </div>
-        <div class="stat-row"><span class="stat-label">⚽ Match</span><span class="stat-value">Brazil vs Germany</span></div>
-        <div class="stat-row"><span class="stat-label">🕘 Kickoff</span><span class="stat-value">21:00 EST</span></div>
-        <div class="stat-row"><span class="stat-label">⏳ Countdown</span><span class="stat-value text-primary" id="kickoff-countdown">47 min</span></div>
+        <div class="stat-row"><span class="stat-label">⚽ Match</span><span class="stat-value">🇧🇷 Brazil vs 🇩🇪 Germany</span></div>
+        <div class="stat-row"><span class="stat-label">🕘 Kickoff</span><span class="stat-value">21:00 ET · July 14, 2026</span></div>
+        <div class="stat-row"><span class="stat-label">⏳ Status</span><span class="stat-value text-primary" id="hero-phase">Pre-Match</span></div>
+        <div class="stat-row"><span class="stat-label">⏱ Countdown</span><span class="stat-value text-primary" id="kickoff-countdown">—</span></div>
         <div class="stat-row"><span class="stat-label">🌤 Weather</span><span class="stat-value" id="home-weather">24°C Cloudy</span></div>
         <div class="stat-row"><span class="stat-label">🏟 Capacity</span><span class="stat-value" id="home-capacity">82,000 / 82,500</span></div>
       </div>
+
+      <!-- Digital Ticket Wallet -->
+      <div class="ticket-wallet-card glass">
+        <div class="ticket-wallet-header">
+          <span class="ticket-logo">⚽ FIFA World Cup 2026™</span>
+          <button class="btn btn-xs" id="btn-show-ticket" style="border-color:rgba(0,209,255,0.3);color:var(--primary)" aria-expanded="false" aria-label="Show ticket QR code">Show QR</button>
+        </div>
+        <div class="ticket-match">🇧🇷 Brazil vs 🇩🇪 Germany</div>
+        <div class="ticket-details">Seat A-214 · Section 119 · Level 1 · Gate B Entry</div>
+        <div class="ticket-date">Tuesday, July 14, 2026 · 21:00 ET · MetLife Stadium, NJ</div>
+        <div id="ticket-wallet-detail" class="hidden">
+          <div class="ticket-barcode-section">
+            <div>
+              <div class="ticket-id">TKT-FIFA26-BRA-GER-A214</div>
+              <div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.15rem">Valid for entry via Gate B</div>
+            </div>
+            <div class="barcode-visual" aria-label="Ticket barcode">|||||⚽|||||</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sustainability Card -->
+      <div class="card glass">
+        <div class="card-header">
+          <span class="card-title">🌿 Eco Impact Today</span>
+          <span id="sustain-eco" class="text-xs" style="color:var(--success)">—</span>
+        </div>
+        <div class="sustain-grid">
+          <div class="sustain-stat"><span class="sustain-val" id="sustain-co2">—</span><span class="sustain-label">CO₂ saved</span></div>
+          <div class="sustain-stat"><span class="sustain-val" id="sustain-transit">—</span><span class="sustain-label">Transit mode</span></div>
+          <div class="sustain-stat"><span class="sustain-val" id="sustain-water">—</span><span class="sustain-label">Refills used</span></div>
+          <div class="sustain-stat"><span class="sustain-val" id="sustain-eco" style="color:var(--primary)">—</span><span class="sustain-label">Eco score</span></div>
+        </div>
+        <div class="eco-bar-wrap">
+          <div class="eco-bar-track"><div class="eco-bar-fill" id="sustain-eco-bar" style="width:0%"></div></div>
+        </div>
+      </div>
     </section>
+
 
     <!-- ── AI ASSISTANT VIEW ───────────────────────────────────────────── -->
     <section id="view-assistant" class="view" aria-label="AI Assistant">
@@ -370,14 +409,58 @@
         <div class="card-header"><span class="card-title">Nearest Exits</span></div>
         <div id="exit-list" class="d-flex flex-col gap-xs"></div>
       </div>
+
+      <!-- Exit Planner section (inside emergency view) -->
+      <div>
+        <button class="btn btn-ghost btn-sm btn-full" id="btn-exit-planner" aria-label="Generate AI exit plan" style="margin-top:0.5rem">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Exit Planner
+        </button>
+        <div id="exit-planner-content" style="margin-top:0.75rem"></div>
+      </div>
+    </section>
+
+    <!-- ── MATCH DAY PLAN VIEW ──────────────────────────────────────────── -->
+    <section id="view-plan" class="view" aria-label="Match Day Planner">
+      <div class="card glass">
+        <div class="card-header">
+          <div>
+            <div class="card-title" style="color:var(--primary)">📅 <span id="plan-title">Your Match Day Plan</span></div>
+            <div class="text-xs text-muted" id="plan-keytip" style="margin-top:0.2rem"></div>
+          </div>
+          <button class="btn btn-xs" id="btn-refresh-plan" aria-label="Refresh match day plan" style="border-color:rgba(0,209,255,0.3);color:var(--primary)">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+        <div id="plan-items" class="d-flex flex-col gap-xs">
+          <div class="skeleton-item"></div>
+          <div class="skeleton-item"></div>
+          <div class="skeleton-item"></div>
+        </div>
+        <div class="text-xs text-muted mt-sm" id="plan-walking"></div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-header">
+          <span class="card-title">🚪 Exit Strategy</span>
+          <button class="btn btn-xs" id="btn-gen-exit" aria-label="Generate AI exit strategy" style="border-color:rgba(0,209,255,0.3);color:var(--primary)">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+          </button>
+        </div>
+        <div id="plan-exit-content" class="text-xs text-muted">Click Generate to get an AI-powered exit plan tailored to today's crowd patterns.</div>
+      </div>
     </section>
 
   </main>
 
-  <!-- Fan Bottom Navigation (6 items) -->
-  <nav class="bottom-nav" aria-label="Main navigation">
-    <button class="nav-item active" data-tab="home"      role="tab" aria-selected="true"  aria-label="Home">
+  <!-- Match Day Planner View (hidden by default, shown when plan tab is active) -->
+  <!-- NOTE: This is injected as a child of fan-content by the nav switch logic. -->
+  <!-- The following is a static container that fan.js populates dynamically -->
+
+  <!-- Fan Bottom Navigation (7 items) -->
+  <nav class="bottom-nav" aria-label="Main navigation" role="tablist">
+    <button class="nav-item active" data-tab="home"      role="tab" aria-selected="true"  aria-label="Home" style="position:relative">
       <i class="fa-solid fa-house"></i><span>Home</span>
+      <span class="nav-badge hidden" id="badge-home" aria-label="notifications"></span>
     </button>
     <button class="nav-item" data-tab="assistant" role="tab" aria-selected="false" aria-label="AI Assistant">
       <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI</span>
@@ -388,8 +471,12 @@
     <button class="nav-item" data-tab="crowd"     role="tab" aria-selected="false" aria-label="Crowd">
       <i class="fa-solid fa-chart-simple"></i><span>Crowd</span>
     </button>
-    <button class="nav-item" data-tab="food"      role="tab" aria-selected="false" aria-label="Food">
+    <button class="nav-item" data-tab="food"      role="tab" aria-selected="false" aria-label="Food" style="position:relative">
       <i class="fa-solid fa-utensils"></i><span>Food</span>
+      <span class="nav-badge hidden" id="badge-food" aria-label="food queue notifications"></span>
+    </button>
+    <button class="nav-item" data-tab="plan"      role="tab" aria-selected="false" aria-label="Plan" id="btn-go-plan">
+      <i class="fa-solid fa-calendar-check"></i><span>Plan</span>
     </button>
     <button class="nav-item" data-tab="emergency" role="tab" aria-selected="false" aria-label="Emergency" style="color:var(--danger)">
       <i class="fa-solid fa-triangle-exclamation"></i><span>SOS</span>
@@ -428,24 +515,20 @@
     <!-- KPI Grid -->
     <div class="insights-grid" id="org-kpi-grid">
       <div class="insight-card">
-        <div class="insight-value" id="kpi-attendance">—</div>
+        <div class="insight-value" id="org-kpi-attendance">—</div>
         <div class="insight-label">Attendance</div>
-        <div class="insight-trend stable" id="kpi-attendance-trend">—</div>
       </div>
       <div class="insight-card">
-        <div class="insight-value text-danger" id="kpi-critical-zones">—</div>
-        <div class="insight-label">Critical Zones</div>
-        <div class="insight-trend up" id="kpi-zones-trend">—</div>
+        <div class="insight-value text-danger" id="org-kpi-crowd">—</div>
+        <div class="insight-label">Crowd Level</div>
       </div>
       <div class="insight-card">
-        <div class="insight-value text-success" id="kpi-gates-open">—</div>
+        <div class="insight-value text-success" id="org-kpi-gates">—</div>
         <div class="insight-label">Gates Open</div>
-        <div class="insight-trend stable">All operational</div>
       </div>
       <div class="insight-card">
-        <div class="insight-value text-primary" id="kpi-volunteers">—</div>
-        <div class="insight-label">Volunteers Active</div>
-        <div class="insight-trend stable" id="kpi-vol-trend">—</div>
+        <div class="insight-value text-primary" id="org-kpi-eco">—</div>
+        <div class="insight-label">Eco Score</div>
       </div>
     </div>
 

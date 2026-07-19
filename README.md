@@ -4,6 +4,11 @@
 
 ---
 
+## Live 
+https://stadiumflow.vercel.app/
+
+
+
 ## 🌟 Vision
 **StadiumFlow AI** is a premium, mobile-first web companion designed for the FIFA World Cup 2026 at MetLife Stadium. Instead of deploying multiple disconnected AI features, StadiumFlow AI aggregates live stadium metrics, user profiles, accessibility needs, and match timelines into a **Single AI Context Engine**. 
 

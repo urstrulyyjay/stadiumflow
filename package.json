@@ -1,0 +1,25 @@
+{
+  "name": "stadiumflow-ai",
+  "version": "2.0.0",
+  "description": "AI-powered Smart Stadium Companion for FIFA World Cup 2026 — MetLife Stadium, NJ",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "node --test src/test/unit/cache.test.js src/test/unit/time.test.js src/test/unit/dom.test.js src/test/unit/match_schedule.test.js src/test/unit/simulation.test.js src/test/unit/context_engine.test.js",
+    "test:unit": "node --test src/test/unit/*.test.js",
+    "test:verbose": "node --test --test-reporter=spec src/test/unit/*.test.js",
+    "test:coverage": "node --experimental-test-coverage --test src/test/unit/*.test.js",
+    "serve": "python3 -m http.server 8000",
+    "start": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "FIFA", "World Cup 2026", "stadium", "AI", "Gemini", "smart stadium",
+    "MetLife Stadium", "crowd management", "fan experience"
+  ],
+  "author": "Jay Dhokne <urstrulyyjay>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {}
+}

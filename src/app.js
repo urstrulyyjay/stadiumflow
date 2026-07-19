@@ -79,13 +79,25 @@ async function enterRole(role) {
     contextEngine.setRole(role);
 
     // Hide role selector
-    document.getElementById('role-selector')?.classList.add('hidden');
+    const selectorEl = document.getElementById('role-selector');
+    if (selectorEl) {
+        selectorEl.classList.add('hidden');
+        selectorEl.setAttribute('aria-hidden', 'true');
+    }
 
     // Show role-specific app shell
     const appIds = { fan: 'fan-app', organizer: 'organizer-app', volunteer: 'volunteer-app', staff: 'staff-app' };
     Object.entries(appIds).forEach(([r, id]) => {
         const el = document.getElementById(id);
-        if (el) el.classList.toggle('hidden', r !== role);
+        if (el) {
+            const isHidden = r !== role;
+            el.classList.toggle('hidden', isHidden);
+            if (isHidden) {
+                el.setAttribute('aria-hidden', 'true');
+            } else {
+                el.removeAttribute('aria-hidden');
+            }
+        }
     });
 
     // Destroy any currently active module
@@ -122,11 +134,19 @@ function exitToRoleSelector() {
 
     // Hide all apps
     ['fan-app', 'organizer-app', 'volunteer-app', 'staff-app'].forEach(id => {
-        document.getElementById(id)?.classList.add('hidden');
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('hidden');
+            el.setAttribute('aria-hidden', 'true');
+        }
     });
 
     // Show role selector
-    document.getElementById('role-selector')?.classList.remove('hidden');
+    const selectorEl = document.getElementById('role-selector');
+    if (selectorEl) {
+        selectorEl.classList.remove('hidden');
+        selectorEl.removeAttribute('aria-hidden');
+    }
 
     // Clear emergency if active
     contextEngine.clearEmergency();

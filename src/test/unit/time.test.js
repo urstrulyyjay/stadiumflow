@@ -2,19 +2,31 @@
  * src/test/unit/time.test.js
  * Unit tests for time formatting utilities.
  *
- * Tests: formatCountdown, formatMinutes, formatMatchPhase, timeAgo.
- * All functions are pure — no browser/DOM needed.
- *
  * Run: node --test src/test/unit/time.test.js
  */
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+
+// Mock global document for testing DOM-dependent countdown
+const mockElements = {};
+globalThis.document = {
+    getElementById: (id) => {
+        if (!mockElements[id]) {
+            mockElements[id] = { id, textContent: '' };
+        }
+        return mockElements[id];
+    }
+};
+
 import {
     formatCountdown,
     formatMinutes,
     formatMatchPhase,
     timeAgo,
+    formatTimeET,
+    formatTimeLocal,
+    startKickoffCountdown
 } from '../../utils/time.js';
 
 // ─── formatCountdown ───────────────────────────────────────────────────────────
@@ -171,3 +183,47 @@ describe('timeAgo', () => {
         assert.doesNotThrow(() => timeAgo(date));
     });
 });
+
+// ─── DOM/Time Formatting (Mocked) ────────────────────────────────────────────
+
+describe('Time Formatting & Countdown (Mocked)', () => {
+
+    test('formatTimeET returns formatted time string', () => {
+        const date = new Date('2026-07-14T20:00:00-04:00');
+        const res = formatTimeET(date);
+        assert.equal(typeof res, 'string');
+        assert.equal(res, '20:00'); // Eastern Time
+    });
+
+    test('formatTimeLocal returns formatted time string', () => {
+        const date = new Date();
+        const res = formatTimeLocal(date);
+        assert.equal(typeof res, 'string');
+        assert.ok(res.includes(':'));
+    });
+
+    test('startKickoffCountdown updates DOM elements', () => {
+        let mins = 30;
+        const intervalId = startKickoffCountdown('countdown-el', () => mins);
+        assert.ok(intervalId);
+        const el = document.getElementById('countdown-el');
+        assert.equal(el.textContent, '30 min');
+
+        // Test boundary 0 min (kickoff)
+        mins = 0;
+        // Invoke tick function internally by triggering the kickoff interval callback manually,
+        // or we can let it run. But we can test it directly since startKickoffCountdown calls
+        // tick() immediately synchronously!
+        const intervalId2 = startKickoffCountdown('countdown-el2', () => 0);
+        assert.equal(document.getElementById('countdown-el2').textContent, 'KICK-OFF!');
+        clearInterval(intervalId2);
+
+        // Test boundary negative mins (live match)
+        const intervalId3 = startKickoffCountdown('countdown-el3', () => -5);
+        assert.equal(document.getElementById('countdown-el3').textContent, 'LIVE');
+        clearInterval(intervalId3);
+
+        clearInterval(intervalId);
+    });
+});
+

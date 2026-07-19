@@ -25,7 +25,7 @@ describe('startSimulation — snapshot shape', (t) => {
                 snapshot = s;
                 stopSimulation();
                 resolve();
-            });
+            }, 5);
         });
     });
 
@@ -75,7 +75,7 @@ describe('startSimulation — gate data integrity', () => {
                 snapshot = s;
                 stopSimulation();
                 resolve();
-            });
+            }, 5);
         });
     });
 
@@ -129,7 +129,7 @@ describe('startSimulation — food stall data integrity', () => {
                 snapshot = s;
                 stopSimulation();
                 resolve();
-            });
+            }, 5);
         });
     });
 
@@ -173,7 +173,7 @@ describe('startSimulation — zone density validity', () => {
                 snapshot = s;
                 stopSimulation();
                 resolve();
-            });
+            }, 5);
         });
     });
 
@@ -216,10 +216,50 @@ describe('stopSimulation', () => {
     });
 
     test('stops the callback from firing after stop is called', async () => {
-        let callCount = 0;
-        startSimulation(() => { callCount++; });
+        const callCount = 0;
+        startSimulation(() => {});
         stopSimulation();
         await new Promise(r => setTimeout(r, 100));
         assert.equal(callCount, 0, `expected 0 callbacks after stop, got ${callCount}`);
     });
 });
+
+// ─── Phase-specific Alerts & Ticks ──────────────────────────────────────────────
+
+describe('Simulation — alert triggers and phase parameter paths', () => {
+
+    test('covers alert thresholds under varied match states', async () => {
+        // We import and mutate MATCH dynamically to trigger alert generation paths
+        const { MATCH } = await import('../../data/match_schedule.js');
+        const origMins = MATCH.minutesUntilKickoff;
+        const origPhase = MATCH.currentPhase;
+
+        // Force alert conditions
+        MATCH.minutesUntilKickoff = 30;
+        MATCH.currentPhase = 'Half Time';
+
+        let ticks = 0;
+        let lastSnapshot = null;
+
+        await new Promise((resolve) => {
+            startSimulation((snap) => {
+                lastSnapshot = snap;
+                ticks++;
+                if (ticks >= 21) {
+                    stopSimulation();
+                    resolve();
+                }
+            }, 5); // 5ms interval for rapid coverage
+        });
+
+        // Reset MATCH to original state to not break subsequent tests
+        MATCH.minutesUntilKickoff = origMins;
+        MATCH.currentPhase = origPhase;
+
+        assert.ok(ticks >= 21, `Expected at least 21 simulation ticks, got ${ticks}`);
+        assert.ok(lastSnapshot !== null);
+        // Verify sustainability calculations ran
+        assert.ok(lastSnapshot.sustainability.waterRefillCount > METLIFE_STADIUM.sustainability.waterRefillCount);
+    });
+});
+

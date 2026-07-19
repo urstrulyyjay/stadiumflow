@@ -12,11 +12,14 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { contextEngine } from '../../services/contextEngine.js';
-import { stopSimulation } from '../../services/simulation.js';
+import { startSimulation, stopSimulation } from '../../services/simulation.js';
 
 // Ensure engine is initialized once before all tests
-before(() => {
+before(async () => {
+    // Start simulation at 5ms interval so it ticks rapidly and covers contextEngine simulation callback
+    startSimulation(() => {}, 5);
     contextEngine.init();
+    await new Promise(r => setTimeout(r, 50));
 });
 
 after(() => {
@@ -377,3 +380,28 @@ describe('contextEngine — toggleGate', () => {
         assert.equal(result, undefined);
     });
 });
+
+// ─── External API Hook ────────────────────────────────────────────────────────
+
+describe('contextEngine — updateFromRealAPI', () => {
+
+    test('updates liveState with API data', () => {
+        const testData = {
+            gates: { gateA: { crowdLevel: 88, status: 'reduced' } },
+            food: { shake_shack_b: { queueTime: 12 } },
+            zones: { zone_lower_bowl: { density: 45 } },
+            parking: { gold_lot_1: { available: 10 } },
+            weather: { temp: 25 },
+            transport: { rail_njt: { status: 'delayed' } },
+            sustainability: { ecoScore: 92 },
+            alerts: [{ message: 'API Alert' }]
+        };
+        contextEngine.updateFromRealAPI(testData);
+        const state = contextEngine.getLiveState();
+        assert.equal(state.gates.gateA.status, 'reduced');
+        assert.equal(state.food.shake_shack_b.queueTime, 12);
+        assert.equal(state.weather.temp, 25);
+    });
+});
+
+

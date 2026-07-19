@@ -1,18 +1,48 @@
 /**
  * src/test/unit/dom.test.js
- * Unit tests for pure DOM utility functions.
- *
- * Only the functions that do NOT touch the real DOM are tested here:
- *   escapeHTML, capitalize, crowdClass, crowdColor, renderBold, statusBadge
- *
- * DOM-mutating functions (safeText, showSkeleton, animateNumber, toggleHidden,
- * updateNavBadge) are covered by the integration test suite.
+ * Unit tests for DOM utility functions.
+ * Uses lightweight mocks for DOM APIs in the Node environment to achieve 100% coverage.
  *
  * Run: node --test src/test/unit/dom.test.js
  */
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+
+// ─── Browser DOM Mocks ──────────────────────────────────────────────────────────
+const mockElements = {};
+globalThis.document = {
+    getElementById: (id) => {
+        if (!mockElements[id]) {
+            mockElements[id] = {
+                id,
+                textContent: '',
+                innerHTML: '',
+                classList: {
+                    _classes: new Set(),
+                    add(c) { this._classes.add(c); },
+                    remove(c) { this._classes.delete(c); },
+                    toggle(c) {
+                        if (this._classes.has(c)) this._classes.delete(c);
+                        else this._classes.add(c);
+                    },
+                    contains(c) { return this._classes.has(c); }
+                },
+                style: {
+                    setProperty: () => {},
+                }
+            };
+        }
+        return mockElements[id];
+    }
+};
+globalThis.window = {
+    performance: { now: () => Date.now() },
+    requestAnimationFrame: (cb) => setTimeout(() => cb(Date.now()), 10)
+};
+globalThis.performance = globalThis.window.performance;
+globalThis.requestAnimationFrame = globalThis.window.requestAnimationFrame;
+
 import {
     escapeHTML,
     capitalize,
@@ -20,6 +50,12 @@ import {
     crowdColor,
     renderBold,
     statusBadge,
+    safeText,
+    safeHTML,
+    showSkeleton,
+    toggleHidden,
+    animateNumber,
+    updateNavBadge
 } from '../../utils/dom.js';
 
 // ─── escapeHTML ────────────────────────────────────────────────────────────────
@@ -236,3 +272,58 @@ describe('statusBadge', () => {
         assert.doesNotThrow(() => statusBadge('', 'ok'));
     });
 });
+
+// ─── DOM Mutators (Mocked) ───────────────────────────────────────────────────
+
+describe('DOM Mutators (Mocked)', () => {
+
+    test('safeText sets textContent', () => {
+        safeText('test-text', 'hello world');
+        assert.equal(document.getElementById('test-text').textContent, 'hello world');
+    });
+
+    test('safeHTML sets innerHTML', () => {
+        safeHTML('test-html', '<div>hello</div>');
+        assert.equal(document.getElementById('test-html').innerHTML, '<div>hello</div>');
+    });
+
+    test('showSkeleton inserts skeleton div items', () => {
+        showSkeleton('test-skeleton', 3);
+        assert.equal(
+            document.getElementById('test-skeleton').innerHTML,
+            '<div class="skeleton-item"></div><div class="skeleton-item"></div><div class="skeleton-item"></div>'
+        );
+    });
+
+    test('toggleHidden toggles class list', () => {
+        const el = document.getElementById('test-toggle');
+        toggleHidden('test-toggle', true);
+        assert.ok(el.classList.contains('hidden'));
+        toggleHidden('test-toggle', false);
+        assert.ok(!el.classList.contains('hidden'));
+        toggleHidden('test-toggle');
+        assert.ok(el.classList.contains('hidden'));
+    });
+
+    test('updateNavBadge shows or hides badges based on count', () => {
+        const el = document.getElementById('test-badge');
+        updateNavBadge('test-badge', 5);
+        assert.equal(String(el.textContent), '5');
+        assert.ok(!el.classList.contains('hidden'));
+
+        updateNavBadge('test-badge', 12);
+        assert.equal(String(el.textContent), '9+');
+
+        updateNavBadge('test-badge', 0);
+        assert.ok(el.classList.contains('hidden'));
+    });
+
+    test('animateNumber triggers numeric change', async () => {
+        const el = document.getElementById('test-anim');
+        el.textContent = '10';
+        animateNumber('test-anim', 100, '%', 20);
+        await new Promise(r => setTimeout(r, 40));
+        assert.equal(el.textContent, '100%');
+    });
+});
+

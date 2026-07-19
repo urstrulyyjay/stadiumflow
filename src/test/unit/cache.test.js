@@ -85,6 +85,17 @@ describe('TTLCache — basic operations', () => {
         assert.equal(aiCache.get('false'), false);
         assert.equal(aiCache.get('empty'), '');
     });
+
+    test('evicts oldest entry when size exceeds max size limit', () => {
+        aiCache.clear();
+        for (let i = 0; i < 55; i++) {
+            aiCache.set(`key_${i}`, i, 5000);
+        }
+        assert.equal(aiCache.get('key_0'), undefined);
+        assert.equal(aiCache.get('key_4'), undefined);
+        assert.equal(aiCache.get('key_5'), 5);
+        assert.equal(aiCache.size, 50);
+    });
 });
 
 // ─── buildCacheKey ─────────────────────────────────────────────────────────────

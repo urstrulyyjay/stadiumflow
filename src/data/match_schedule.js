@@ -88,8 +88,7 @@ export function getCurrentMatchMinute() {
     if (elapsed >= 0 && elapsed <= 45) return elapsed;  // First Half
     if (elapsed > 45 && elapsed <= 60) return 'HT';    // Half Time
     if (elapsed > 60 && elapsed <= 105) return elapsed - 15; // Second Half (adjust for break)
-    if (elapsed > 105) return 'FT';            // Full Time
-    return null;
+    return 'FT';            // Full Time (covers elapsed > 105)
 }
 
 /**
